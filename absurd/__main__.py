@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from updi import UpdiRev3, WIDTH_BYTE, WIDTH_3BYTE, WIDTH_WORD, KEY_OCD
+from updi import UpdiRev3, WIDTH_BYTE, WIDTH_3BYTE, WIDTH_WORD, KEY_OCD, KEY_NVMPROG
 import sys
 from logging import getLogger, StreamHandler, Formatter, DEBUG
 
@@ -19,10 +19,10 @@ if __name__=="__main__":
     parser.add_argument("-F", "--enable-flashing", help="Enable features that require modifying NVM contents", action="store_true")
     args = parser.parse_args()
 
-    updiclient = UpdiRev3(args.port, args.bps, args.enable_flashing)
+    updiclient = UpdiRev3(args.port, args.bps)
     updiclient.connect()
-    updiclient.load_direct(0x800012, data_width=WIDTH_BYTE)
-    updiclient.store_direct(0x801234, 0x56, data_width=WIDTH_WORD)
+    updiclient.load_direct(0x000610, data_width=WIDTH_BYTE)
+    # updiclient.store_direct(0x801234, 0x56, data_width=WIDTH_WORD)
     updiclient.resynchronize()
     updiclient.key(KEY_OCD)
     log.info(args)
