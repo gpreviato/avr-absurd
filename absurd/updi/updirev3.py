@@ -126,15 +126,15 @@ class UpdiRev3:
         succ, val = self.command(bytes((0xC0 | addr, value)))
         return succ, None if succ else cast(str, val)
     
-    def read_sib(self, size: Literal[0b00, 0b01, 0b10] = 2) -> Tuple[bool, Optional[str]]:
+    def read_sib(self, size: Literal[0b00, 0b01, 0b10] = 2) -> Tuple[bool, bytes | str]:
         """
         `key.sib width` instruction (opcode 0xE_)  
         width: 0=8 B; 1=16 B; 2=32 B  
         * width=2 is undocumented, but is used by official debuggers, and in fact 32 B is sent even if width=1
         """
         assert 0 <= size <= 3
-        succ, val = self.command(bytes((0xE4 | size)), n_expected=32)
-        return succ, None if succ else cast(str, val)
+        succ, val = self.command(bytes((0xE4 | size,)), n_expected=32)
+        return succ, cast(bytes, val) if succ else cast(str, val)
     
     def key(self, key: bytes) -> Tuple[bool, Optional[str]]:
         """
