@@ -307,7 +307,7 @@ class UpdiRev3:
         """
         self.store_pointer(addr)
         self.repeat(burst)
-        return self.load_indirect(data_width, 1)
+        return self.load_indirect(data_width=data_width, addr_step=1, burst=burst)
     
     def store_burst(self, addr: int, data: bytes, data_width: Literal[0, 1] = 0, burst=1) -> None:
         """
@@ -315,4 +315,4 @@ class UpdiRev3:
         """
         self.store_pointer(addr)
         self.repeat(burst)
-        self.store_indirect(data, data_width, 1)
+        self.store_indirect(data, data_width=data_width, addr_step=1, burst=burst)

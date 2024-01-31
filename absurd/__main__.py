@@ -1,8 +1,9 @@
 from argparse import ArgumentParser
 import sys
 from logging import getLogger, StreamHandler, Formatter, DEBUG
+import time
 import serial
-from updi import UpdiRev1, UpdiException, WIDTH_BYTE, WIDTH_3BYTE, WIDTH_WORD, KEY_OCD, KEY_NVMPROG
+from updi import UpdiRev1, UpdiRev3, UpdiException, WIDTH_BYTE, WIDTH_3BYTE, WIDTH_WORD, KEY_OCD, KEY_NVMPROG
 
 log = getLogger()
 handler = StreamHandler(sys.stderr)
@@ -27,11 +28,15 @@ if __name__=="__main__":
         # Identify the chip and determine UPDI, NVM & OCD versions
         updiver: int = uc.connect()
         sib: str = uc.read_sib().decode(errors="replace")
+        uc.key(KEY_NVMPROG)
+        uc.store_csr(0x8, 0x59)
+        uc.store_csr(0x8, 0x00)
+        time.sleep(0.1)
         signature = uc.load_burst(0x1100, burst=3)  # SIGROW.DEVICEID
         revid = uc.load_direct(0x0F01)              # SYSCFG.REVID
         
         sig = signature.hex("-").upper()
-        rev = f"{chr((revid>>4)+65)}{revid&0x0F}" if revid & 0xF0 else chr(revid + 65)
+        rev = f"{chr((revid>>4)+64)}{revid&0x0F}" if revid & 0xF0 else chr(revid + 65)
         nvmver = sib[10]
         ocdver = sib[13]
         sibrev = sib[20:22]
@@ -41,6 +46,9 @@ if __name__=="__main__":
         print(f"Signature: {sig} (revision {rev})")
         print(f"NVM: v{nvmver} / OCD: v{ocdver}")
         log.info(args)
+        uc.store_csr(0x8, 0x59)
+        uc.store_csr(0x8, 0x00)
+        time.sleep(0.1)
         uc.disconnect()
 
     except serial.SerialException:
@@ -48,7 +56,9 @@ if __name__=="__main__":
         exit(1)
     except UpdiException as ex:
         print(f"UPDI instruction `{ex.instruction}` failed", file=sys.stderr)
+        uc.resynchronize()
         uc.disconnect()
+        raise
         exit(1)
     except KeyboardInterrupt:
         uc.disconnect()
