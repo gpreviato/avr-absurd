@@ -223,7 +223,7 @@ class UpdiRev3:
         else:
             return True, b[0] | (b[1] << 8) | (b[2] << 16)
         
-    def store_pointer(self, addr, addr_width:Literal[0,1,2]=2) ->Tuple[bool, Optional[Literal['EchoTimedOut', 'ResponseTimedOut']]]:
+    def store_pointer(self, addr:int, addr_width:Literal[0,1,2]=2) ->Tuple[bool, Optional[Literal['EchoTimedOut', 'ResponseTimedOut']]]:
         """
         `st ptr` instruction (opcode 0x6_)
         sets the pointer for indirect access by `ld`/`st` instructions.
