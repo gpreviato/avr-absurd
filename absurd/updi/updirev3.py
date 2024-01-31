@@ -14,7 +14,7 @@ class UpdiRev3:
         self.uart.port = serialport
         self.uart.dtr = False
     
-    def connect(self) -> Tuple[bool, int | Literal["SerialPortUnavailable", "TimedOut"]]:
+    def connect(self) -> Tuple[bool, int | Literal["TimedOut"]]:
         """
         Assumes control of the serial port and connects to the UPDI on-chip interface.
         DTR will be deasserted and then reasserted to generate an HV pulse on SerialUPDI adapters supporting HV-UPDI.
@@ -26,7 +26,7 @@ class UpdiRev3:
             self.uart.open()
         except serial.SerialException:
             log.error(f"Could not open {self.uart.name}")
-            return False, "SerialPortUnavailable"
+            raise
         
         log.debug("Emitting HV pulse and handshake")
         time.sleep(0.001)
@@ -53,10 +53,11 @@ class UpdiRev3:
     
     def disconnect(self):
         """
-        issues `stcs CTRLB, UPDIDIS` and closes serial port
+        issues `stcs CTRLB, UPDIDIS` and closes serial port if it is open
         """
-        self.store_csr(0x3, 4)
-        self.uart.close()
+        if self.uart.is_open:
+            self.store_csr(0x3, 4)
+            self.uart.close()
 
     def resynchronize(self) -> Tuple[bool, Optional[int]]:
         """
