@@ -1,4 +1,4 @@
-from .updirev3 import UpdiRev3
+from .updirev3 import UpdiRev3, UpdiException
 from .updicompat import UpdiRev1, UpdiRev2
 
 KEY_NVMPROG = b'NVMProg '
