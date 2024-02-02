@@ -1,6 +1,8 @@
 from .updirev3 import UpdiRev3, UpdiException
 from .updicompat import UpdiRev1, UpdiRev2
 
+UpdiClient = UpdiRev1 | UpdiRev2 | UpdiRev3
+
 KEY_NVMPROG = b'NVMProg '
 KEY_NVMERASE = b'NVMErase'
 KEY_NVMUSERROW = b'NVMUs&te'

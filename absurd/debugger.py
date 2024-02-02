@@ -1,0 +1,183 @@
+from enum import IntEnum, IntFlag
+import time
+from typing import Optional
+from .updi import WIDTH_WORD, UpdiClient, UpdiException, KEY_OCD
+
+OCD = 0x0F80
+OCD_BP0A = OCD + 0x00
+OCD_BP0AT = OCD + 0x02
+OCD_BP1A = OCD + 0x04
+OCD_BP1AT = OCD + 0x06
+OCD_TRAPEN = OCD + 0x08
+OCD_TRAPENL = OCD + 0x08
+OCD_TRAPENH = OCD + 0x09
+OCD_CAUSE = OCD + 0x0C
+OCD_PC = OCD + 0x14
+OCD_SP = OCD + 0x18
+OCD_SREG = OCD + 0x1C
+OCD_R0 = OCD + 0x20
+
+# UPDI CSR addresses
+ASI_OCD_CTRLA = 0x4
+ASI_OCD_STATUS = 0x5
+ASI_RESET_REQ = 0x8
+ASI_SYS_STATUS = 0xB
+ASI_OCD_MESSAGE = 0xD
+
+# UPDI CSR bitmasks
+ASI_OCD_STOP = 0x01
+ASI_OCD_STOPPED = 0x01
+ASI_OCD_RUN = 0x02
+ASI_RSTREQ_RESET = 0x59
+ASI_RSTREQ_RUN = 0x00
+ASI_SYS_SYSRST = 0x20
+
+class Traps(IntFlag):
+    UNKNOWN1 = 0x0001
+    HWBP = 0x0002
+    STEP = 0x0004
+    BP0 = 0x0100
+    BP1 = 0x0200
+    UNKNOWN2 = 0x1000
+    SWBP = 0x2000
+    JMP = 0x4000
+    INT = 0x8000
+
+class OcdRev1:
+    def __init__(self, updi: UpdiClient) -> None:
+        self.updi = updi
+    
+    def attach(self):
+        self.updi.connect()
+        self.updi.key(KEY_OCD)
+    
+    def detach(self):
+        self.updi.disconnect()
+    
+    def halt(self):
+        self.updi.store_csr(ASI_OCD_CTRLA, ASI_OCD_STOP)
+
+    def run(self):
+        self.updi.store_csr(ASI_OCD_CTRLA, ASI_OCD_RUN)
+    
+    def is_halted(self):
+        return self.updi.load_csr(ASI_OCD_STATUS) & ASI_OCD_STOPPED
+
+    def poll_halted(self, interval: float = 0.1, count: Optional[int] = None):
+        while not self.is_halted():
+            if count is not None:
+                if count <= 1:
+                    return False
+                else:
+                    count -= 1
+            time.sleep(interval)
+        return True
+    
+    def reset(self):
+        self.updi.store_csr(ASI_RESET_REQ, ASI_RSTREQ_RESET)
+        self.updi.store_csr(ASI_RESET_REQ, ASI_RSTREQ_RUN)
+        while self.updi.load_csr(ASI_SYS_STATUS) & ASI_SYS_SYSRST:
+            time.sleep(0.01)
+
+    def set_traps(self, traps: Traps):
+        self.updi.store_direct(OCD_TRAPEN, traps, data_width=WIDTH_WORD)
+    
+    def set_bp(self, bpid: int, wordaddr: int):
+        byteaddr = (wordaddr << 1) & 0xFFFF
+        topbit = wordaddr >> 15
+        origregval = self.updi.load_direct(OCD_TRAPENH)
+        if bpid == 0:
+            self.updi.store_direct(OCD_BP0A, byteaddr, data_width=WIDTH_WORD)
+            self.updi.store_direct(OCD_BP0AT, topbit)
+            self.updi.store_direct(OCD_TRAPENH, origregval | 0x1)
+        elif bpid == 1:
+            self.updi.store_direct(OCD + 0x4, byteaddr, data_width=WIDTH_WORD)
+            self.updi.store_direct(OCD + 0x6, topbit)
+            self.updi.store_direct(OCD_TRAPENH, origregval | 0x2)
+
+    def clear_bp(self, bpid: int):
+        origregval = self.updi.load_direct(OCD_TRAPENH)
+        if bpid == 0:
+            self.updi.store_direct(OCD_TRAPENH, origregval & ~0x1)
+            self.updi.store_direct(OCD_BP0A, 0, data_width=WIDTH_WORD)
+            self.updi.store_direct(OCD_BP0AT, 0)
+        elif bpid == 1:
+            self.updi.store_direct(OCD_TRAPENH, origregval & ~0x2)
+            self.updi.store_direct(OCD + 0x4, 0, data_width=WIDTH_WORD)
+            self.updi.store_direct(OCD + 0x6, 0)
+
+    def get_pc(self):
+        return self.updi.load_direct(OCD_PC, data_width=WIDTH_WORD)
+    
+    def set_pc(self, pc: int):
+        self.updi.store_direct(OCD_PC, pc, data_width=WIDTH_WORD)
+
+    def get_sp(self):
+        return self.updi.load_direct(OCD_SP, data_width=WIDTH_WORD)
+    
+    def set_sp(self, sp: int):
+        self.updi.store_direct(OCD_SP, sp, data_width=WIDTH_WORD)
+    
+    def get_sreg(self):
+        return self.updi.load_direct(OCD_SREG)
+    
+    def set_sreg(self, sreg: int):
+        self.updi.store_direct(OCD_SREG, sreg)
+    
+    def get_gpr(self, num:int):
+        assert 0 <= num < 32
+        return self.updi.load_direct(OCD_R0 + num)
+    
+    def set_gpr(self, num: int, value: int):
+        assert 0 <= num < 32
+        return self.updi.store_direct(OCD_R0 + num, value)
+
+    def get_register_file(self):
+        return self.updi.load_burst(OCD_R0, burst=32)
+
+    def step(self):
+        origregval = self.updi.load_direct(OCD_TRAPENL)
+        self.updi.store_direct(OCD_TRAPENL, origregval | Traps.STEP)
+        self.run()
+        self.poll_halted()
+        self.updi.store_direct(OCD_TRAPENL, origregval)
+    
+    def move_pc(self, dest:int):
+        self.set_pc(dest)
+        self.step()
+
+    def dump_ocd(self):
+        dump = self.updi.load_burst(OCD, burst=64)
+        bp0 = dump[0] | (dump[1] << 8) | (dump[2] << 16)
+        bp1 = dump[4] | (dump[5] << 8) | (dump[6] << 16)
+        trapen = dump[8] | (dump[9] << 8)
+        trapstr = (("I" if trapen & Traps.INT else "_")
+                   + ("J" if trapen & Traps.JMP else "_")
+                   + ("S" if trapen & Traps.SWBP else "_")
+                   + ("?" if trapen & Traps.UNKNOWN2 else "_")
+                   + ("1" if trapen & Traps.BP1 else "_")
+                   + ("0 " if trapen & Traps.BP0 else "_ ")
+                   + ("P" if trapen & Traps.STEP else "_")
+                   + ("H" if trapen & Traps.HWBP else "_")
+                   + ("?" if trapen & Traps.UNKNOWN1 else "_"))
+        cd = dump[12] | (dump[13] << 8)
+        # o1011 = dump[0x10] | (dump[0x11] << 8)
+        pc = dump[0x14] | (dump[0x15] << 8)
+        sp = dump[0x18] | (dump[0x19] << 8)
+        sreg = dump[0x1c]
+        sregstr = (("I" if sreg & 0x80 else "i")
+                   + ("T" if sreg & 0x40 else "t")
+                   + ("H" if sreg & 0x20 else "h")
+                   + ("S" if sreg & 0x10 else "s")
+                   + ("Z" if sreg & 0x08 else "z")
+                   + ("N" if sreg & 0x04 else "n")
+                   + ("V" if sreg & 0x02 else "v")
+                   + ("C" if sreg & 0x01 else "c"))
+        rf = dump[0x20:0x3F].hex(",")
+        print(f"BP0:\t 0x{bp0>>1:04x} W (0x{bp0:05x} B)")
+        print(f"BP1:\t 0x{bp1>>1:04x} W (0x{bp1:05x} B)")
+        print(f"TRAPEN:\t 0x{trapen:04x} ({trapstr})")
+        print(f"REASON:\t 0x{cd:04x}")
+        # print(f"0x10:\t 0x{o1011:04x}")
+        print(f"PC:\t 0x{pc-1:04x}\nSP:\t 0x{sp:04x}\nSREG:\t {sregstr}")
+        print(f"Rn:\t {rf}\n")
