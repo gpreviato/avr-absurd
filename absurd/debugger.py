@@ -44,8 +44,9 @@ class Traps(IntFlag):
     INT = 0x8000
 
 class OcdRev1:
-    def __init__(self, updi: UpdiClient) -> None:
+    def __init__(self, updi: UpdiClient, flash_offset: int) -> None:
         self.updi = updi
+        self.flash_offset = flash_offset
     
     def attach(self):
         self.updi.connect()
@@ -107,10 +108,10 @@ class OcdRev1:
             self.updi.store_direct(OCD + 0x6, 0)
 
     def get_pc(self):
-        return self.updi.load_direct(OCD_PC, data_width=WIDTH_WORD)
+        return self.updi.load_direct(OCD_PC, data_width=WIDTH_WORD)-1
     
     def set_pc(self, pc: int):
-        self.updi.store_direct(OCD_PC, pc, data_width=WIDTH_WORD)
+        self.updi.store_direct(OCD_PC, (pc+1) & 0xFFFF, data_width=WIDTH_WORD)
 
     def get_sp(self):
         return self.updi.load_direct(OCD_SP, data_width=WIDTH_WORD)
@@ -143,8 +144,20 @@ class OcdRev1:
         self.updi.store_direct(OCD_TRAPENL, origregval)
     
     def move_pc(self, dest:int):
-        self.set_pc(dest)
+        self.set_pc(dest-1)
         self.step()
+
+    def read_flash(self, start:int, length:int) -> bytes:
+        if start < 0 or 0x200000 <= start or length <= 0:
+            return bytes()
+        length = min(length, 256)
+        return self.updi.load_burst(start + self.flash_offset, burst=length)
+    
+    def read_data(self, start:int, length:int) -> bytes:
+        if start < 0 or 0x10000 <= start or length <= 0:
+            return bytes()
+        length = min(length, 256)
+        return self.updi.load_burst(start, burst=length)
 
     def dump_ocd(self):
         dump = self.updi.load_burst(OCD, burst=64)
