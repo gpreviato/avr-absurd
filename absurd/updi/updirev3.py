@@ -39,10 +39,19 @@ class UpdiRev3:
         time.sleep(0.001)
         self.uart.dtr = False
         # Handshake. Spec says t(Deb0) within 200 ns and 1 us, which is hard to comply; usually much longer pulse works
-        self.uart.send_break(0.001)
+        self.uart.send_break(0.000_001)
         # We have 13 ms before sending Sync char
+        time.sleep(0.005)
         # Clear read buffer as it may contain Break ('\0' w/ FE) or other garbage
         self.uart.reset_input_buffer()
+        
+        # Added for compatibility with T412
+        # stcs CTRLB, 0x08 (Disable contention check)
+        self.uart.write(b"U\xc3\x08")
+        self.uart.flush()
+        self.uart.read(3)
+        self.uart.reset_input_buffer()
+
         # Issue a harmless command ("ldcs CTRLA") to consume the Sync char
         self.uart.write(b'U\x80')
         self.uart.flush()

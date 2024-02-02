@@ -25,6 +25,9 @@ class UpdiRev2(UpdiRev3):
         super().store_indirect(data, data_width, addr_step, burst)
 
 
+class UpdiRev4(UpdiRev2):
+    pass
+
 class UpdiRev1(UpdiRev2):
     def load_pointer(self, addr_width: Literal[0, 1] = 1) -> int:
         """
