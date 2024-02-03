@@ -113,7 +113,6 @@ class RspServer:
                 try:
                     data = self.client.recv(1024)
                 except socket.timeout:
-                    print("timeout")
                     data = bytes()
 
                 packets = self.packparser.process_bytes(data)

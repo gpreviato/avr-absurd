@@ -27,7 +27,12 @@ def main():
     uc = UpdiRev1(args.port, args.bps)
     try:
         # Identify the chip and determine UPDI, NVM & OCD versions
-        updiver: int = uc.connect()
+        try:
+            updiver: int = uc.connect()
+        except UpdiException:
+            uc.resynchronize()
+            updiver: int = uc.connect()
+
         time.sleep(0.1)
         sib: str = uc.read_sib().decode(errors="replace")
         uc.key(KEY_NVMPROG)
@@ -53,12 +58,6 @@ def main():
         time.sleep(0.1)
         uc.disconnect()
 
-        # TODO: Check parts and set revision automatically
-        updic = UpdiRev3(args.port, args.bps)
-        dbg = OcdRev1(updic, 0x800000)
-        sv = RspServer(12345, dbg)
-        sv.serve()
-
     except serial.SerialException:
         print(f"Error while interacting serial port `{args.port}`", file=sys.stderr)
         exit(1)
@@ -66,15 +65,27 @@ def main():
         print(f"UPDI instruction `{ex.instruction}` failed", file=sys.stderr)
         uc.resynchronize()
         uc.disconnect()
-        raise
+        exit(1)
+
+    # main loop
+    updic = UpdiRev3(args.port, args.bps)
+    try:
+        # TODO: Check parts and set revision automatically
+        dbg = OcdRev1(updic, 0x800000)
+        sv = RspServer(12345, dbg)
+        sv.serve()
+    
+    except UpdiException as ex:
+        print(f"UPDI instruction `{ex.instruction}` failed", file=sys.stderr)
+        updic.disconnect()
         exit(1)
     except StopIteration:
         print(f"Normal termination", file=sys.stderr)
-        uc.disconnect()
+        updic.disconnect()
         exit(0)
     except KeyboardInterrupt:
         print(f"Terminated by Ctrl-C", file=sys.stderr)
-        uc.disconnect()
+        updic.disconnect()
         exit(0)
 
 if __name__=="__main__":
