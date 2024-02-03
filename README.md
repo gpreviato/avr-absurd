@@ -14,7 +14,7 @@ ABSURD is licensed under the MIT License.
 ## Usage
 - Clone this repository
 - Connect MCU and PC with a SerialUPDI programmer
-- `python absurd -P [serial port] -p [MCU part name] -r [TCP port number]`
+- `python -m absurd -P [serial port] -p [MCU part name] -r [TCP port number]`
 - Run `avr-gdb` and connect to the server by `target extended-remote :[TCP port number]`
 
 ## Features

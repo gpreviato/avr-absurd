@@ -32,7 +32,7 @@ Now we know about the wide fields, but the bits in other registers are sparsely 
 
 There were 8 bits freely modifiable: OCD+0x08[0:2] and OCD+0x09[0:1], [4] and [6:7]. Bit 5 of the latter was constantly set and could not be cleared. Since at least some of these must be the switches to activate breakpoint or other reasons to halt the CPU, I tried setting one of them and run the program until it hit something and halted.
 
-Some bits were easy. **OCD+0x08[2] was single-stepping**. When this bit was set, the core stopped at every instruction. **OCD+0x09[7] corresponded to halt-on-interrupt**, and CPU was stopped on the vector if this bit was set. **OCD+0x09[6] halted the core right after `call`/`jmp` instructions**.
+Some bits were easy. **OCD+0x08[2] was single-stepping**. When this bit was set, the core stopped at ~~every instruction~~ (_it turned out to be a little more complicated. See the following sections._). **OCD+0x09[7] corresponded to halt-on-interrupt**, and CPU was stopped on the vector if this bit was set. **OCD+0x09[6] halted the core right after `call`/`jmp` instructions**.
 
 Finding enable bits for breakpoints was somewhat harder. After experiments, it was found that **OCD+0x09[0:1] controlled individual breakpoints**, and **OCD+0x08[1] was the global enable bit** for both breakpoints. For a hardware breakpoint to be active, both bits had to be set.
 
@@ -40,10 +40,16 @@ Unfortunately, I could not find what OCD+0x08[0] and OCD+0x09[4] corresponded to
 
 During these experiments, the read-only registers OCD+0x0C and +0x0D turned out to show what stopped the CPU. In addition to the causes corresponding to the previously described enable bits, there were two other bits: OCD+0x0C[7] for halt-on-reset and [6] for externally issued halt (via ASI_OCD_CTRLA). Somehow OCD+0x0D[0] was shared by BP0 and stepping. OCD+0x0C[2] was always asserted when any of other bits were set.
 
-### Stepping and PC
+### OCD.PC and PC
 As mentioned above, value at OCD+0x14 (let me call this OCD.PC here) is actually PC+1. When the CPU is halted on reset, OCD.PC gives 0x0001. If the OCD.PC is 0x70, the PC is actually 0x69, and the instruction at 0x69 is about to be (i.e., not yet) executed.
 
-Additionally, we have to be very careful when modifying the PC. If we move OCD.PC to 0x70 and run, 0x69 is not executed despite the actual PC is at 0x69. It seems like we have to set PC to actual destination minus one.
+Additionally, we have to be very careful when modifying the PC. If we move OCD.PC to 0x70 and run, 0x69 is not executed despite the actual PC is at 0x69. It seems like we have to set PC to actual destination minus one. (Is this related to the pipeline? AVR CPUs take 2 clock cycles to complete a simple instruction: one for instruction fetch and the other for execution.)
+
+### Single-Stepping
+At first, I thought OCD+0x08[2] caused the CPU to halt on the next instruction. In fact, it turned out that the CPU stopped on the *second* instruction. Initially this didn't make sense at all and troubled me, but the behavior of the PC when it was edited gave me some insights. As described in the previous section, the CPU seems to ignore the instruction PC is on, and the next instruction is the one that is actually executed. So, if we combine modification to PC and this "double-stepping", we can achieve single-stepping. Based on this idea, I implemented single-stepping as `PC=PC-1` plus `OCD+0x08=0x04`. This needs serious testing, but seemingly it's working.
+
+By the way, during experimenting with this feature, I found that OCD+0x08[0] caused the PC to stay on the current instruction when stepping was performed. Seemingly, it resulted in no operation executed. This may or may not have to do something to do with the double-stepping....
+ 
 
 ## Register Map
 ### OCD ASI Registers
@@ -67,7 +73,7 @@ OCD base address is `0x0F80`. The names are of course not official.
 | 0x04   | BP1A   | BP1AL | =   | =    | =   | =   | =       | =>   | 0        | Breakpoint 1  |
 | 0x05   | BP1A   | BP1AH | =   | =    | =   | =   | =       | =    | =>       |               |
 | 0x06   | BP1A   |       |     |      |     |     |         |      | BP1AT    | (MSb)         |
-| 0x08   | TRAPEN |       |     |      |     |     | STEP    | HWBP | ???      | Trap Enable   |
+| 0x08   | TRAPEN |       |     |      |     |     | STEP    | HWBP | PCHOLD?  | Trap Enable   |
 | 0x09   | TRAPEN | INT   | JMP | SWBP | ??? |     |         | BP1  | BP0      |               |
 | 0x0C   | CAUSE  | RESET | EXT |      |     |     | STOPPED |      |          | Halt Cause    |
 | 0x0D   | CAUSE  | INT   | JMP | SWBP |     |     |         | BP1  | BP0_STEP |               |
