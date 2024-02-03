@@ -371,8 +371,8 @@ class RspServer:
                 self.dbg.disable_traps(Traps.UNKNOWN2)
                 self.send_packet(b'UNKNOWN2 disabled\n'.hex())
             elif cmd=="step":
-                log.info(f"Old plain step")
-                self.dbg.old_step()
+                log.info(f"Raw step")
+                self.dbg.raw_stepping()
                 self.send_packet(b'Legacy stepping, Ctrl+C\n'.hex())
             else:
                 log.warn(f"Unrecognized monitor command")

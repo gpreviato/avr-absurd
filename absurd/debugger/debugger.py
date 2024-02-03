@@ -155,15 +155,17 @@ class OcdRev1:
 
     def step(self):
         # TODO: verify this
-        self.set_pc(self.get_pc()-1)
+        curpc = self.get_pc()
+        if curpc != 0:
+            self.set_pc(curpc-1)
         
-        origregval = self.updi.load_direct(OCD_TRAPENL)
-        self.updi.store_direct(OCD_TRAPENL, origregval | Traps.STEP)
-        self.run()
-        self.poll_halted()
-        self.updi.store_direct(OCD_TRAPENL, origregval)
+        self.raw_stepping()
 
-    def old_step(self):
+        if self.get_pc() == curpc:
+            # PC didn't move; we haven't hit the OCD bug. one more stepping
+            self.raw_stepping()
+
+    def raw_stepping(self):
         origregval = self.updi.load_direct(OCD_TRAPENL)
         self.updi.store_direct(OCD_TRAPENL, origregval | Traps.STEP)
         self.run()
