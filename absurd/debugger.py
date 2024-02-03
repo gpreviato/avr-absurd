@@ -1,7 +1,7 @@
 from enum import IntEnum, IntFlag
 import time
 from typing import Optional
-from .updi import WIDTH_WORD, UpdiClient, UpdiException, KEY_OCD
+from .updi import WIDTH_BYTE, WIDTH_WORD, UpdiClient, UpdiException, KEY_OCD
 
 OCD = 0x0F80
 OCD_BP0A = OCD + 0x00
@@ -49,7 +49,12 @@ class OcdRev1:
         self.flash_offset = flash_offset
     
     def attach(self):
-        self.updi.connect()
+        try:
+            self.updi.connect()
+        except UpdiException:
+            # UPDI may already be active: try to resynchronize and it's ok if it succeeds
+            self.updi.resynchronize()
+
         self.updi.key(KEY_OCD)
     
     def detach(self):
@@ -62,7 +67,7 @@ class OcdRev1:
         self.updi.store_csr(ASI_OCD_CTRLA, ASI_OCD_RUN)
     
     def is_halted(self):
-        return self.updi.load_csr(ASI_OCD_STATUS) & ASI_OCD_STOPPED
+        return (self.updi.load_csr(ASI_OCD_STATUS) & ASI_OCD_STOPPED) or self.updi.load_direct(OCD_CAUSE) #(self.updi.load_direct(OCD_CAUSE) & 0x04)
 
     def poll_halted(self, interval: float = 0.1, count: Optional[int] = None):
         while not self.is_halted():
@@ -82,6 +87,14 @@ class OcdRev1:
 
     def set_traps(self, traps: Traps):
         self.updi.store_direct(OCD_TRAPEN, traps, data_width=WIDTH_WORD)
+
+    def enable_traps(self, traps: Traps):
+        current = self.updi.load_direct(OCD_TRAPEN, data_width=WIDTH_WORD)
+        self.updi.store_direct(OCD_TRAPEN, traps | current, data_width=WIDTH_WORD)
+
+    def disable_traps(self, traps: Traps):
+        current = self.updi.load_direct(OCD_TRAPEN, data_width=WIDTH_WORD)
+        self.updi.store_direct(OCD_TRAPEN, current & ~traps, data_width=WIDTH_WORD)
     
     def set_bp(self, bpid: int, wordaddr: int):
         byteaddr = (wordaddr << 1) & 0xFFFF
@@ -135,19 +148,37 @@ class OcdRev1:
 
     def get_register_file(self):
         return self.updi.load_burst(OCD_R0, burst=32)
+    
+    def set_register_file(self, data:bytes):
+        assert len(data)==32
+        return self.updi.store_burst(OCD_R0, data, burst=32)
 
     def step(self):
+        # TODO: verify this
+        self.set_pc(self.get_pc()-1)
+        
+        origregval = self.updi.load_direct(OCD_TRAPENL)
+        self.updi.store_direct(OCD_TRAPENL, origregval | Traps.STEP)
+        self.run()
+        self.poll_halted()
+        self.updi.store_direct(OCD_TRAPENL, origregval)
+
+    def old_step(self):
         origregval = self.updi.load_direct(OCD_TRAPENL)
         self.updi.store_direct(OCD_TRAPENL, origregval | Traps.STEP)
         self.run()
         self.poll_halted()
         self.updi.store_direct(OCD_TRAPENL, origregval)
     
-    def move_pc(self, dest:int):
-        self.set_pc(dest-1)
+    def resume(self):
+        """
+        use `resume()` instead of `run()` especially if you have modified PC (?). 
+        This will first step() and then run() so that the instruction at the PC is loaded into the pipeline (???)
+        """
         self.step()
+        self.run()
 
-    def read_flash(self, start:int, length:int) -> bytes:
+    def read_code(self, start:int, length:int) -> bytes:
         if start < 0 or 0x200000 <= start or length <= 0:
             return bytes()
         length = min(length, 256)
@@ -158,7 +189,13 @@ class OcdRev1:
             return bytes()
         length = min(length, 256)
         return self.updi.load_burst(start, burst=length)
-
+    
+    def write_data(self, start: int, data: bytes):
+        if start < 0 or 0x10000 <= start or len(data) == 0 or len(data) > 256:
+            return False
+        self.updi.store_burst(start, data, data_width=WIDTH_BYTE, burst=len(data))
+        return True
+    
     def dump_ocd(self):
         dump = self.updi.load_burst(OCD, burst=64)
         bp0 = dump[0] | (dump[1] << 8) | (dump[2] << 16)
@@ -182,9 +219,9 @@ class OcdRev1:
                    + ("T" if sreg & 0x40 else "t")
                    + ("H" if sreg & 0x20 else "h")
                    + ("S" if sreg & 0x10 else "s")
-                   + ("Z" if sreg & 0x08 else "z")
+                   + ("V" if sreg & 0x08 else "v")
                    + ("N" if sreg & 0x04 else "n")
-                   + ("V" if sreg & 0x02 else "v")
+                   + ("Z" if sreg & 0x02 else "z")
                    + ("C" if sreg & 0x01 else "c"))
         rf = dump[0x20:0x3F].hex(",")
         print(f"BP0:\t 0x{bp0>>1:04x} W (0x{bp0:05x} B)")
