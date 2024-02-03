@@ -270,8 +270,8 @@ class RspServer:
             else:
                 log.error(f"Data write failed")
                 self.send_packet(ERR_INVALIDARGS)
-
-        elif packet.startswith("Z1"):
+        # TODO: temporarily fake SWBP
+        elif packet.startswith("Z1") or packet.startswith("Z0"):
             # Set hardware BP
             log.debug(f"Responding to HWBP set request (Z1)")
             cmd = packet[3:].split(",")[0]
@@ -296,7 +296,7 @@ class RspServer:
                 log.error(f"No free HW BPs")
                 self.send_packet(ERR_OUTOFHWBP)
 
-        elif packet.startswith("z1"):
+        elif packet.startswith("z1") or packet.startswith("z0"):
             # Clear hardware BP
             log.debug(f"Responding to HWBP clear request (z1)")
             cmd = packet[3:].split(",")[0]
@@ -309,12 +309,12 @@ class RspServer:
             
             if self.bps[0] == addr:
                 self.bps[0] = -1
-                log.info(f"Clearing BP0")
+                log.info(f"Clearing BP0 at 0x{addr:05x}")
                 self.dbg.clear_bp(0)
                 self.send_packet("OK")
             elif self.bps[1] == addr:
                 self.bps[1] = -1
-                log.info(f"Clearing BP1")
+                log.info(f"Clearing BP1 at 0x{addr:05x}")
                 self.dbg.clear_bp(1)
                 self.send_packet("OK")
             else:

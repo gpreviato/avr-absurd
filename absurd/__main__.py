@@ -11,8 +11,8 @@ log = getLogger()
 handler = StreamHandler(sys.stderr)
 handler.setLevel(DEBUG)
 handler.setFormatter(Formatter("%(asctime)s [%(levelname)s] %(message)s"))
-handler.addFilter(Filter("rspserver"))
-log.setLevel(INFO)
+handler.addFilter(Filter("absurd.rspserver.rspserver"))
+log.setLevel(DEBUG)
 log.addHandler(handler)
 
 def main():

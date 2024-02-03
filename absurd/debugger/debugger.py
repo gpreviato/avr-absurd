@@ -100,6 +100,7 @@ class OcdRev1:
         byteaddr = (wordaddr << 1) & 0xFFFF
         topbit = wordaddr >> 15
         origregval = self.updi.load_direct(OCD_TRAPENH)
+        self.enable_traps(Traps.HWBP)
         if bpid == 0:
             self.updi.store_direct(OCD_BP0A, byteaddr, data_width=WIDTH_WORD)
             self.updi.store_direct(OCD_BP0AT, topbit)
