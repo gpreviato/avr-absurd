@@ -1,4 +1,4 @@
-from .debugger import OcdRev1, Traps
+from ..debugger import OcdRev1, Traps
 import time
 import sys
 import socket
@@ -94,13 +94,28 @@ class RspServer:
         self.dbg.attach()
         self.dbg.halt()
         self.dbg.set_traps(Traps.SWBP | Traps.HWBP)
-        client, addr = self.socket.accept()
+
+        # timeout has to be set for Windows build to accept KeyboardInterrupt
+        self.socket.settimeout(0.1)
+        client, addr = None, None
+        while not client:
+            try:
+                client, addr = self.socket.accept()
+            except socket.timeout:
+                pass
+
         self.client = client
         log.info(f"Connected with {addr}")
         client.setblocking(True)
+        client.settimeout(0.1)
         try:
             while True:
-                data = client.recv(1024)
+                try:
+                    data = self.client.recv(1024)
+                except socket.timeout:
+                    print("timeout")
+                    data = bytes()
+
                 packets = self.packparser.process_bytes(data)
 
                 if b'\x03' in data:
@@ -113,6 +128,7 @@ class RspServer:
                 for p in packets:
                     client.sendall(b'+')
                     self.handle_packet(p)
+                
         finally:
             self.dbg.detach()
             client.close()
@@ -156,12 +172,10 @@ class RspServer:
                     log.info(f"CPU halted, sending SIGTRAP")
                     self.send_packet(SIGTRAP)
                     return
-                self.client.settimeout(0.01)
                 try:
                     b = self.client.recv(1)
                 except socket.timeout:
                     b = bytes()
-                self.client.settimeout(None)
                 # We assume we don't receive any packet here
                 if b'\x03' in b:
                     log.info(f"Interrupted by GDB, halting CPU and sending SIGINT")

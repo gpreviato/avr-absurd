@@ -1,20 +1,21 @@
 from argparse import ArgumentParser
 import sys
-from logging import getLogger, StreamHandler, Formatter, DEBUG
+from logging import INFO, Filter, getLogger, StreamHandler, Formatter, DEBUG
 import time
 import serial
-from updi import UpdiRev1, UpdiRev3, UpdiException, WIDTH_BYTE, WIDTH_3BYTE, WIDTH_WORD, KEY_OCD, KEY_NVMPROG
+from .debugger import OcdRev1
+from .rspserver import RspServer
+from .updi import UpdiRev1, UpdiRev3, UpdiException, WIDTH_BYTE, WIDTH_3BYTE, WIDTH_WORD, KEY_OCD, KEY_NVMPROG
 
 log = getLogger()
 handler = StreamHandler(sys.stderr)
 handler.setLevel(DEBUG)
 handler.setFormatter(Formatter("%(asctime)s [%(levelname)s] %(message)s"))
-log.setLevel(DEBUG)
+handler.addFilter(Filter("rspserver"))
+log.setLevel(INFO)
 log.addHandler(handler)
 
-
-    
-if __name__=="__main__":
+def main():
     parser = ArgumentParser(description="AVR Basic SerialUPDI Remote Debugger")
     parser.add_argument("-p", "--part", help="MCU name (e.g. avr16ea48)", required=True)
     parser.add_argument("-P", "--port", help="Serial port used as SerialUPDI (e.g. COM5 or /dev/ttyS1)", required=True)
@@ -27,6 +28,7 @@ if __name__=="__main__":
     try:
         # Identify the chip and determine UPDI, NVM & OCD versions
         updiver: int = uc.connect()
+        time.sleep(0.1)
         sib: str = uc.read_sib().decode(errors="replace")
         uc.key(KEY_NVMPROG)
         uc.store_csr(0x8, 0x59)
@@ -36,20 +38,26 @@ if __name__=="__main__":
         revid = uc.load_direct(0x0F01)              # SYSCFG.REVID
         
         sig = signature.hex("-").upper()
-        rev = f"{chr((revid>>4)+64)}{revid&0x0F}" if revid & 0xF0 else chr(revid + 65)
+        rev = f"{chr((revid>>4)+64)}{revid&0x0F}" if revid & 0xF0 else chr(revid + 64)
         nvmver = sib[10]
         ocdver = sib[13]
         sibrev = sib[20:22]
-        
+
         print(f"UPDI rev.{updiver}")
         print(f"SIB: {sib}")
         print(f"Signature: {sig} (revision {rev})")
         print(f"NVM: v{nvmver} / OCD: v{ocdver}")
-        log.info(args)
+        
         uc.store_csr(0x8, 0x59)
         uc.store_csr(0x8, 0x00)
         time.sleep(0.1)
         uc.disconnect()
+
+        # TODO: Check parts and set revision automatically
+        updic = UpdiRev3(args.port, args.bps)
+        dbg = OcdRev1(updic, 0x800000)
+        sv = RspServer(12345, dbg)
+        sv.serve()
 
     except serial.SerialException:
         print(f"Error while interacting serial port `{args.port}`", file=sys.stderr)
@@ -60,6 +68,14 @@ if __name__=="__main__":
         uc.disconnect()
         raise
         exit(1)
-    except KeyboardInterrupt:
+    except StopIteration:
+        print(f"Normal termination", file=sys.stderr)
         uc.disconnect()
         exit(0)
+    except KeyboardInterrupt:
+        print(f"Terminated by Ctrl-C", file=sys.stderr)
+        uc.disconnect()
+        exit(0)
+
+if __name__=="__main__":
+    main()

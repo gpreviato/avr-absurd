@@ -1,7 +1,7 @@
 from enum import IntEnum, IntFlag
 import time
 from typing import Optional
-from .updi import WIDTH_BYTE, WIDTH_WORD, UpdiClient, UpdiException, KEY_OCD
+from ..updi import WIDTH_BYTE, WIDTH_WORD, UpdiClient, UpdiException, KEY_OCD
 
 OCD = 0x0F80
 OCD_BP0A = OCD + 0x00
