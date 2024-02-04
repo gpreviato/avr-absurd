@@ -2,5 +2,7 @@
 .venv/*
 **/__pycache__/*
 **.ipynb
+experiments
+experiments/*
 dist
 dist/*
