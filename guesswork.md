@@ -50,7 +50,7 @@ At first, I thought OCD+0x08[2] caused the CPU to halt on the next instruction. 
 
 Now it seems more like a bug of the OCD. Simply setting OCD+0x08[2] works reasonably until the CPU steps on a `sts` instruction. After that, single-stepping becomes double-stepping, and the trick above starts to work. The problem is that if we do the trick from the beginning, the "correct" behavior prevents PC from increasing. To cope with this, we can check if the PC was changed by this operation, and if it did not change, we do the stepping operation once again without setting PC. This seems to work, and there doesn't seem to be any instruction executed twice. 
 
-By the way, during experimenting with this feature, I found that OCD+0x08[0] caused the PC to stay on the current instruction when stepping was performed. Seemingly, it resulted in no operation executed. This may or may not have to do something to do with the double-stepping....
+By the way, during experimenting with this feature, I found that OCD+0x08[0] caused the PC to stay on the current instruction when stepping was performed. Seemingly, it resulted in no operation executed. This may or may not have something to do with the double-stepping....
  
 
 ## Register Map

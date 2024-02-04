@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 import sys
 from logging import INFO, Filter, getLogger, StreamHandler, Formatter, DEBUG
 import time
+import re
 import serial
 from .debugger import OcdRev1
 from .rspserver import RspServer
@@ -15,13 +16,14 @@ handler.addFilter(Filter("absurd.rspserver.rspserver"))
 log.setLevel(DEBUG)
 log.addHandler(handler)
 
+
 def main():
     parser = ArgumentParser(description="AVR Basic SerialUPDI Remote Debugger")
     parser.add_argument("-p", "--part", help="MCU name (e.g. avr16ea48)", required=True)
     parser.add_argument("-P", "--port", help="Serial port used as SerialUPDI (e.g. COM5 or /dev/ttyS1)", required=True)
     parser.add_argument("-b", "--bps", help="Baud rate for communication (defaults to 115200)", type=int, default=115200)
     parser.add_argument("-r", "--rsp-port", help="TCP port number for RSP communcation with gdb", type=int, required=True)
-    parser.add_argument("-F", "--enable-flashing", help="Enable features that require modifying NVM contents", action="store_true")
+    # parser.add_argument("-F", "--enable-flashing", help="Enable features that require modifying NVM contents", action="store_true")
     args = parser.parse_args()
     # As serial port error can happen at any moment, it is never caught by Updi client
     uc = UpdiRev1(args.port, args.bps)
@@ -59,20 +61,39 @@ def main():
         uc.disconnect()
 
     except serial.SerialException:
-        print(f"Error while interacting serial port `{args.port}`", file=sys.stderr)
+        print(f"Error while interacting with serial port `{args.port}`", file=sys.stderr)
         exit(1)
     except UpdiException as ex:
         print(f"UPDI instruction `{ex.instruction}` failed", file=sys.stderr)
         uc.resynchronize()
         uc.disconnect()
         exit(1)
+    
+    # TODO: replace with a more decent mechanism for determining chip parameters
+    megaavr = re.compile(r"atmega(?P<flash>8|16|32|48)0(?P<pincount>8|9)$")
+    tinyavr = re.compile(r"attiny(?P<flash>2|4|8|16|32)(?P<series>0|1|2)(?P<pincount>2|4|6|7)$")
+    newavr = re.compile(r"avr(?P<flash>16|32|64|128)(?P<series>da|db|dd|du|ea|eb)(?P<pincount>14|20|28|32|48|64)$")
+    partname: str = args.part.lower()
 
+    if megaavr.match(partname):
+        # Mega 0
+        flashoffset = 0x4000
+    elif tinyavr.match(partname):
+        # Tiny 0/1/2
+        flashoffset = 0x8000
+    elif newavr.match(partname):
+        # Ex/Dx
+        flashoffset = 0x800000
+    else:
+        print(f"Unknown/incompatible part `{partname}` specified")
+        return
+    
     # main loop
     updic = UpdiRev3(args.port, args.bps)
     try:
         # TODO: Check parts and set revision automatically
-        dbg = OcdRev1(updic, 0x800000)
-        sv = RspServer(12345, dbg)
+        dbg = OcdRev1(updic, flash_offset=flashoffset)
+        sv = RspServer(args.rsp_port, dbg)
         sv.serve()
     
     except UpdiException as ex:
