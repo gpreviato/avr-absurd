@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avr-absurd"
+version = "0.1.0"
+authors = [
+  { name="feline-felicity" },
+]
+description = "GDB RSP server for AVR MCUs connected by SerialUPDI"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Embedded Systems",
+    "Topic :: Software Development :: Debuggers",
+]
+dependencies = [
+  "pyserial",
+]
+license = {file = "LICENSE"}
+keywords = ["avr", "debugger", "ocd", "serialupdi"]
+
+[project.scripts]
+avr-absurd = "absurd:main"
+
+[project.urls]
+Homepage = "https://github.com/feline-felicity/avr-absurd"
+Issues = "https://github.com/feline-felicity/avr-absurd/issues"
