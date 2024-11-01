@@ -14,10 +14,12 @@ class UpdiRev3:
     UPDI client as specified in AVR EA's datasheet (revision 3)
     """
 
-    def __init__(self, serialport:str, baudrate:int):
-        self.uart = serial.Serial(baudrate=baudrate, parity=serial.PARITY_EVEN, stopbits=serial.STOPBITS_TWO, timeout=1.0)
+    def __init__(self, serialport:str, baudrate:int, updi_prescaler=0):
+        self.uart = serial.Serial(baudrate=115200, parity=serial.PARITY_EVEN, stopbits=serial.STOPBITS_TWO, timeout=1.0)
         self.uart.port = serialport
         self.uart.dtr = False
+        self.baudrate = baudrate
+        self.updi_prescaler = updi_prescaler
     
     def connect(self) -> int:
         """
@@ -38,31 +40,28 @@ class UpdiRev3:
         self.uart.dtr = True
         time.sleep(0.001)
         self.uart.dtr = False
-        # Handshake. Spec says t(Deb0) within 200 ns and 1 us, which is hard to comply; usually much longer pulse works
-        self.uart.send_break(0.000_001)
+        # Handshake at fixed baud rate of 115200. Spec says t(Deb0) within 200 ns and 1 us, which is hard to comply; usually much longer pulse works
+        # self.uart.send_break(0.000_001)
+        self.uart.baudrate = 115200
+        self.uart.write(b'\xFE') # 2 bit (S+LSb) low pulse @ 115200 bps = 17 us. \xFF didn't work somehow
+        self.uart.flush()
         # We have 13 ms before sending Sync char
         time.sleep(0.005)
-        # Clear read buffer as it may contain Break ('\0' w/ FE) or other garbage
-        self.uart.reset_input_buffer()
         
         # Added for compatibility with T412
         # stcs CTRLB, 0x08 (Disable contention check)
-        self.uart.write(b"U\xc3\x08")
-        self.uart.flush()
-        self.uart.read(3)
-        self.uart.reset_input_buffer()
+        self.store_csr(0x03, 0x08)
 
-        # Issue a harmless command ("ldcs CTRLA") to consume the Sync char
-        self.uart.write(b'U\x80')
-        self.uart.flush()
-        buffer = self.uart.read(3)
-        if len(buffer) != 3:
-            # timed out, connection failed
-            log.error(f"Initial command timed out; could not connect to MCU (expected 3 bytes, got '{buffer.hex(' ')}')")
-            raise UpdiException("ldcs", "`ldcs CTRLA` after handshake failed")
-        
-        log.info(f"UPDI version: {buffer[2] >> 4}")
-        return buffer[2] >> 4
+        # Set UPDI prescaler and switch to specified speed
+        self.store_csr(0x09, self.updi_prescaler & 0x03)
+        time.sleep(0.01)
+        self.uart.baudrate = self.baudrate
+        time.sleep(0.01)
+
+        # Check successful communication by `ldcs STATUSA`
+        version = self.load_csr(0x00)
+        log.info(f"UPDI version: {version >> 4}")
+        return version >> 4
     
     def disconnect(self):
         """
@@ -78,10 +77,18 @@ class UpdiRev3:
         returns: error code as given in STATUSB.PESIG
         """
         # 25 ms is long enough to be recognized as Break by slowest specified baud rate 
-        log.debug("Transmitting 25 ms break")
-        self.uart.send_break(0.025)
-        # ldcs STATUSB
+        log.debug("Transmitting double long break")
+        # self.uart.send_break(0.025)
+        # On request, CH340 changes baudrate immediately, even during active transmission
+        # Because of this, we have to send NUL at a very low baudrate, sleep a while, then restore the original rate to simulate a break
+        params = self.uart.get_settings()
+        self.uart.baudrate = 300
+        self.uart.write(b"\0\0")
+        self.uart.flush()
+        time.sleep(0.1)
+        # ldcs STATUSB at 115200 bps
         log.debug("Clearing PESIG by read access")
+        self.uart.baudrate = 115200
         self.uart.reset_input_buffer()
         self.uart.write(b'U\x81')
         self.uart.flush()
@@ -89,8 +96,12 @@ class UpdiRev3:
         if len(buffer) != 3:
             log.error(f"'ldcs STATUSB' after Break timed out; could not connect to MCU (expected 3 bytes, got '{buffer.hex(' ')}')")
             raise UpdiException("ldcs", "`ldcs STATUSB` following a BREAK character failed")
-            
         log.info(f"UPDI resynchronized; error code: {buffer[2]:02x}")
+        # Set prescaler and resume full baudrate
+        self.store_csr(0x09, self.updi_prescaler & 0x03)
+        time.sleep(0.001)
+        self.uart.baudrate = self.baudrate
+
         return buffer[2]
     
     def command(self, txdata: bytes, n_expected=0, skip_sync=False) -> Tuple[bool, bytes]:
