@@ -19,6 +19,15 @@ ERR_READONLY = "E03"
 ERR_OUTOFHWBP = "E04"
 ERR_NOSUCHBP = "E05"
 
+# TODO: Memory type for the program memory should be "flash" with block size specified
+MEMORYMAP = """
+<?xml version="1.0"?>
+<!DOCTYPE memory-map PUBLIC "+//IDN gnu.org//DTD GDB Memory Map V1.0//EN" "http://sourceware.org/gdb/gdb-memory-map.dtd">
+<memory-map>
+    <memory type="ram" start="0x800000" length="0x10000"/>
+    <memory type="rom" start="0x0" length="0x20000"/>
+</memory-map>
+"""
 
 def verify_checksum(payload: bytes, checksum: bytes) -> bool:
     try:
@@ -138,7 +147,7 @@ class RspServer:
 
         if packet.startswith("qSupported"):
             log.debug(f"Responding to qSupported")
-            self.send_packet("PacketSize=1024")
+            self.send_packet("PacketSize=1024;qXfer:memory-map:read+")
 
         elif packet.startswith("qSymbol::"):
             log.debug(f"Responding to qSymbol:: with OK")
@@ -164,7 +173,7 @@ class RspServer:
             # TODO: implement "continue from..."
             # We have to poll MCU for halted CPU, but we also have to accept interrupt request from GDB, so we poll both alternatingly
             # This would help if PC was moved and pipeline was invalidated(?)
-            self.dbg.resume()
+            self.dbg.run()
             log.info(f"Resumed CPU; now polling for CPU Halt or Client Interrupt")
             while True:
                 if self.dbg.is_halted():
@@ -330,6 +339,21 @@ class RspServer:
             log.info(f"Responding to vAttach with fake SIGTRAP")
             self.send_packet(SIGTRAP)
 
+        elif packet.startswith("qXfer:memory-map:read"):
+            log.info(f"qXfer:memory-map:read::")
+            try:
+                offset, length = packet[23:].split(",")
+                offset = int(offset, 16)
+                length = int(length, 16)
+            except (ValueError, IndexError):
+                log.error(f"Could not parse command")
+                self.send_packet(ERR_INVALIDARGS)
+                return
+            if offset+length >= len(MEMORYMAP):
+                self.send_packet("l" + MEMORYMAP[offset:(offset+length)])
+            else:
+                self.send_packet("m" + MEMORYMAP[offset:(offset+length)])
+
         elif packet.startswith("qRcmd"):
             # would be a good place to support strange things
             log.info(f"Monitor Command: {packet}")
@@ -370,10 +394,6 @@ class RspServer:
                 log.info(f"Disabling UNKNOWN2")
                 self.dbg.disable_traps(Traps.UNKNOWN2)
                 self.send_packet(b'UNKNOWN2 disabled\n'.hex())
-            elif cmd=="step":
-                log.info(f"Raw step")
-                self.dbg.raw_stepping()
-                self.send_packet(b'Legacy stepping, Ctrl+C\n'.hex())
             else:
                 log.warn(f"Unrecognized monitor command")
                 self.send_packet("")
@@ -384,6 +404,8 @@ class RspServer:
         elif packet.startswith("vKill"):
             log.info(f"Responding to vKill with fake OK...")
             self.send_packet("OK")
+            log.info(f"Detaching")
+            raise StopIteration() # TODO: stop abuse of StopIteration
 
         elif packet.startswith("vRun"):
             log.info(f"Resetting MCU upon vRun request")
