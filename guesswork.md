@@ -32,7 +32,7 @@ Now we know about the wide fields, but the bits in other registers are sparsely 
 
 There were 8 bits freely modifiable: OCD+0x08[0:2] and OCD+0x09[0:1], [4] and [6:7]. Bit 5 of the latter was constantly set and could not be cleared. Since at least some of these must be the switches to activate breakpoint or other reasons to halt the CPU, I tried setting one of them and run the program until it hit something and halted.
 
-Some bits were easy. **OCD+0x08[2] was single-stepping**. When this bit was set, the core stopped at ~~every instruction~~ (_it turned out to be a little more complicated. See the following sections._). **OCD+0x09[7] corresponded to halt-on-interrupt**, and CPU was stopped on the vector if this bit was set. **OCD+0x09[6] halted the core right after `call`/`jmp` instructions**.
+Some bits were easy. **OCD+0x08[2] was single-stepping**. When this bit was set, the core stopped at every instruction. **OCD+0x09[7] corresponded to halt-on-interrupt**, and CPU was stopped on the vector if this bit was set. **OCD+0x09[6] halted the core right after jump/skip instructions**.
 
 Finding enable bits for breakpoints was somewhat harder. After experiments, it was found that **OCD+0x09[0:1] controlled individual breakpoints**, and **OCD+0x08[1] was the global enable bit** for both breakpoints. For a hardware breakpoint to be active, both bits had to be set.
 
@@ -46,12 +46,22 @@ As mentioned above, value at OCD+0x14 (let me call this OCD.PC here) is actually
 Additionally, we have to be very careful when modifying the PC. If we move OCD.PC to 0x70 and run, 0x69 is not executed despite the actual PC is at 0x69. It seems like we have to set PC to actual destination minus one. (Is this related to the pipeline? AVR CPUs take 2 clock cycles to complete a simple instruction: one for instruction fetch and the other for execution.)
 
 ### Single-Stepping
-At first, I thought OCD+0x08[2] caused the CPU to halt on the next instruction. In fact, it turned out that the CPU stopped on the *second* instruction. Initially this didn't make sense at all and troubled me, but the behavior of the PC when it was edited gave me some insights. As described in the previous section, the CPU seems to ignore the instruction PC is on, and the next instruction is the one that is actually executed. So, if we combine modification to PC and this "double-stepping", we can achieve single-stepping. Based on this idea, I implemented single-stepping as `PC=PC-1` plus `OCD+0x08=0x04`. This needs serious testing, ~~but seemingly it's working~~.
+~~At first, I thought OCD+0x08[2] caused the CPU to halt on the next instruction. In fact, it turned out that the CPU stopped on the *second* instruction. Initially this didn't make sense at all and troubled me, but the behavior of the PC when it was edited gave me some insights. As described in the previous section, the CPU seems to ignore the instruction PC is on, and the next instruction is the one that is actually executed. So, if we combine modification to PC and this "double-stepping", we can achieve single-stepping. Based on this idea, I implemented single-stepping as `PC=PC-1` plus `OCD+0x08=0x04`. This needs serious testing, but seemingly it's working.~~
 
-Now it seems more like a bug of the OCD. Simply setting OCD+0x08[2] works reasonably until the CPU steps on a `sts` instruction. After that, single-stepping becomes double-stepping, and the trick above starts to work. The problem is that if we do the trick from the beginning, the "correct" behavior prevents PC from increasing. To cope with this, we can check if the PC was changed by this operation, and if it did not change, we do the stepping operation once again without setting PC. This seems to work, and there doesn't seem to be any instruction executed twice. 
+~~Now it seems more like a bug of the OCD. Simply setting OCD+0x08[2] works reasonably until the CPU steps on a `sts` instruction. After that, single-stepping becomes double-stepping, and the trick above starts to work. The problem is that if we do the trick from the beginning, the "correct" behavior prevents PC from increasing. To cope with this, we can check if the PC was changed by this operation, and if it did not change, we do the stepping operation once again without setting PC. This seems to work, and there doesn't seem to be any instruction executed twice.~~
 
-By the way, during experimenting with this feature, I found that OCD+0x08[0] caused the PC to stay on the current instruction when stepping was performed. Seemingly, it resulted in no operation executed. This may or may not have something to do with the double-stepping....
+~~By the way, during experimenting with this feature, I found that OCD+0x08[0] caused the PC to stay on the current instruction when stepping was performed. Seemingly, it resulted in no operation executed. This may or may not have something to do with the double-stepping....~~
+
+It was finally found that **slow UPDI clock** was the cause of slippery-stepping. The problem had nothing to do with two-word instructions or `sts` instruction. The `sts` instruction I blamed above was actually writing `CLKCTRL_FRQSEL_24M_gc` to `CLKCTRL.OSCHFCTRLA`, which increased the CPU frequency from 4 MHz to 24 MHz. At this speed, UPDI seemed to be unable to keep up with the CPU with its default clock of 4 MHz. With `ASI_CTRLA.UPDICLKSEL` set to `0x0` (32 MHz), single-stepping worked just as expected.
  
+### Halt on Change of Flow
+OCD+0x09[6] causes the CPU to halt right after a jump, which seems to be the "change of flow" breakpoint feature mentioned in datasheets. This feature works on all kinds of instructions that cause PC to jump:
+- `cpse`: compare skip if equal
+- `sb[i|r][c|s]`: skip if bit in IO-register/GPR is cleared/set
+- `br__`: conditional branch
+- `[r|i]?jmp`: relative/indirect/direct jump
+- `[r|i]?call`: relative/indirect/direct subroutine call
+- `ret`/`reti`: return from subroutine/interrupt
 
 ## Register Map
 ### OCD ASI Registers

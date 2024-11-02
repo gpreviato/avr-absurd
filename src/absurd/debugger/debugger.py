@@ -69,14 +69,15 @@ class OcdRev1:
     def is_halted(self):
         return (self.updi.load_csr(ASI_OCD_STATUS) & ASI_OCD_STOPPED) or self.updi.load_direct(OCD_CAUSE) #(self.updi.load_direct(OCD_CAUSE) & 0x04)
 
-    def poll_halted(self, interval: float = 0.1, count: Optional[int] = None):
+    def poll_halted(self, interval: float = 0, count: Optional[int] = None):
         while not self.is_halted():
             if count is not None:
                 if count <= 1:
                     return False
                 else:
                     count -= 1
-            time.sleep(interval)
+            if interval:
+                time.sleep(interval)
         return True
     
     def reset(self):
@@ -125,7 +126,11 @@ class OcdRev1:
         return self.updi.load_direct(OCD_PC, data_width=WIDTH_WORD)-1
     
     def set_pc(self, pc: int):
-        self.updi.store_direct(OCD_PC, (pc+1) & 0xFFFF, data_width=WIDTH_WORD)
+        # not pc+1; the instruction at the newly set PC is not executed
+        # Thus, we have to set PC to pc+1-1...
+        self.updi.store_direct(OCD_PC, pc & 0xFFFF, data_width=WIDTH_WORD)
+        # ...and do one step to complete that empty cycle, possibly related to instruction fetch
+        self.step()
 
     def get_sp(self):
         return self.updi.load_direct(OCD_SP, data_width=WIDTH_WORD)
@@ -155,32 +160,12 @@ class OcdRev1:
         return self.updi.store_burst(OCD_R0, data, burst=32)
 
     def step(self):
-        # TODO: verify this
-        curpc = self.get_pc()
-        if curpc != 0:
-            self.set_pc(curpc-1)
-        
-        self.raw_stepping()
-
-        if self.get_pc() == curpc:
-            # PC didn't move; we haven't hit the OCD bug. one more stepping
-            self.raw_stepping()
-
-    def raw_stepping(self):
         origregval = self.updi.load_direct(OCD_TRAPENL)
         self.updi.store_direct(OCD_TRAPENL, origregval | Traps.STEP)
         self.run()
         self.poll_halted()
         self.updi.store_direct(OCD_TRAPENL, origregval)
     
-    def resume(self):
-        """
-        use `resume()` instead of `run()` especially if you have modified PC (?). 
-        This will first step() and then run() so that the instruction at the PC is loaded into the pipeline (???)
-        """
-        self.step()
-        self.run()
-
     def read_code(self, start:int, length:int) -> bytes:
         if start < 0 or 0x200000 <= start or length <= 0:
             return bytes()
@@ -226,11 +211,11 @@ class OcdRev1:
                    + ("N" if sreg & 0x04 else "n")
                    + ("Z" if sreg & 0x02 else "z")
                    + ("C" if sreg & 0x01 else "c"))
-        rf = dump[0x20:0x3F].hex(",")
+        rf = dump[0x20:0x40].hex(",")
         print(f"BP0:\t 0x{bp0>>1:04x} W (0x{bp0:05x} B)")
         print(f"BP1:\t 0x{bp1>>1:04x} W (0x{bp1:05x} B)")
         print(f"TRAPEN:\t 0x{trapen:04x} ({trapstr})")
         print(f"REASON:\t 0x{cd:04x}")
         # print(f"0x10:\t 0x{o1011:04x}")
-        print(f"PC:\t 0x{pc-1:04x}\nSP:\t 0x{sp:04x}\nSREG:\t {sregstr}")
+        print(f"PC:\t 0x{pc-1:04x} W (0x{(pc-1)<<1:05x} B)\nSP:\t 0x{sp:04x}\nSREG:\t {sregstr}")
         print(f"Rn:\t {rf}\n")
