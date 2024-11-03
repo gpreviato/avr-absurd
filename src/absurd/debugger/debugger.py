@@ -89,6 +89,8 @@ class OcdRev1:
         self.updi.store_csr(ASI_RESET_REQ, ASI_RSTREQ_RUN)
         while self.updi.load_csr(ASI_SYS_STATUS) & ASI_SYS_SYSRST:
             time.sleep(0.01)
+        # For better compatibility with older devices
+        time.sleep(0.1)
 
     def set_traps(self, traps: Traps):
         self.updi.store_direct(OCD_TRAPEN, traps, data_width=WIDTH_WORD)

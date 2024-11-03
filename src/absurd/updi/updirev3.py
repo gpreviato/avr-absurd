@@ -43,7 +43,7 @@ class UpdiRev3:
         # Handshake at fixed baud rate of 115200. Spec says t(Deb0) within 200 ns and 1 us, which is hard to comply; usually much longer pulse works
         # self.uart.send_break(0.000_001)
         self.uart.baudrate = 115200
-        self.uart.write(b'\xFE') # 2 bit (S+LSb) low pulse @ 115200 bps = 17 us. \xFF didn't work somehow
+        self.uart.write(b'\x00')
         self.uart.flush()
         # We have 13 ms before sending Sync char
         time.sleep(0.005)
