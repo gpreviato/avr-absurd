@@ -18,6 +18,7 @@ OCD_SREG = OCD + 0x1C
 OCD_R0 = OCD + 0x20
 
 # UPDI CSR addresses
+UPDI_CTRLA = 0x2
 ASI_OCD_CTRLA = 0x4
 ASI_OCD_STATUS = 0x5
 ASI_RESET_REQ = 0x8
@@ -25,6 +26,7 @@ ASI_SYS_STATUS = 0xB
 ASI_OCD_MESSAGE = 0xD
 
 # UPDI CSR bitmasks
+UPDI_CTRLA_GTVAL_2CYCLES = 0x6
 ASI_OCD_STOP = 0x01
 ASI_OCD_STOPPED = 0x01
 ASI_OCD_RUN = 0x02
@@ -38,7 +40,7 @@ class Traps(IntFlag):
     STEP = 0x0004
     BP0 = 0x0100
     BP1 = 0x0200
-    UNKNOWN2 = 0x1000
+    EXTBRK = 0x1000
     SWBP = 0x2000
     JMP = 0x4000
     INT = 0x8000
@@ -56,6 +58,8 @@ class OcdRev1:
             self.updi.resynchronize()
 
         self.updi.key(KEY_OCD)
+        # Choose minimum guard time since contention is not destructive on an open-drain bus
+        self.updi.store_csr(UPDI_CTRLA, UPDI_CTRLA_GTVAL_2CYCLES)
     
     def detach(self):
         self.updi.disconnect()
@@ -192,7 +196,7 @@ class OcdRev1:
         trapstr = (("I" if trapen & Traps.INT else "_")
                    + ("J" if trapen & Traps.JMP else "_")
                    + ("S" if trapen & Traps.SWBP else "_")
-                   + ("?" if trapen & Traps.UNKNOWN2 else "_")
+                   + ("X" if trapen & Traps.EXTBRK else "_")
                    + ("1" if trapen & Traps.BP1 else "_")
                    + ("0 " if trapen & Traps.BP0 else "_ ")
                    + ("P" if trapen & Traps.STEP else "_")

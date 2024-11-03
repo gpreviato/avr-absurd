@@ -36,7 +36,7 @@ Some bits were easy. **OCD+0x08[2] was single-stepping**. When this bit was set,
 
 Finding enable bits for breakpoints was somewhat harder. After experiments, it was found that **OCD+0x09[0:1] controlled individual breakpoints**, and **OCD+0x08[1] was the global enable bit** for both breakpoints. For a hardware breakpoint to be active, both bits had to be set.
 
-Unfortunately, I could not find what OCD+0x08[0] and OCD+0x09[4] corresponded to. At least, they were not related to WDT reset, NMI, priority 1 interrupt or `sleep`. The constantly-set OCD+0x09[5] seems like to mean software breakpoint is active, which always is.
+Unfortunately, I could not find what OCD+0x08[0] corresponded to. The constantly-set OCD+0x09[5] seems like to mean software breakpoint is active, which always is.
 
 During these experiments, the read-only registers OCD+0x0C and +0x0D turned out to show what stopped the CPU. In addition to the causes corresponding to the previously described enable bits, there were two other bits: OCD+0x0C[7] for halt-on-reset and [6] for externally issued halt (via ASI_OCD_CTRLA). Somehow OCD+0x0D[0] was shared by BP0 and stepping. OCD+0x0C[2] was always asserted when any of other bits were set.
 
@@ -63,6 +63,9 @@ OCD+0x09[6] causes the CPU to halt right after a jump, which seems to be the "ch
 - `[r|i]?call`: relative/indirect/direct subroutine call
 - `ret`/`reti`: return from subroutine/interrupt
 
+### External Break
+OCD+0x09[4] seems to control the "External Break" feature described in the early version of TinyAVR 1-Series datasheet. This is a mechanism to halt all devices in a multi-MCU system. With this bit set, the CPU is halted while the EXTBRK input pin level is high. While which pin it is has never been documented, it turned out to be `PA6` for DB family. It can be on a different pin for other families, and it may be possible to remap it using an undocumented PORTMUX register, as is stated by the datasheet.
+
 ## Register Map
 ### OCD ASI Registers
 Use `stcs`/`ldcs` UPDI instructions to access these registers
@@ -77,23 +80,23 @@ Use `stcs`/`ldcs` UPDI instructions to access these registers
 Use `st(s)`/`ld(s)` UPDI instructions to access these registers. Both byte and word access allowed.  
 OCD base address is `0x0F80`. The names are of course not official.
 
-| Offset | Name   | 7     | 6   | 5    | 4   | 3   | 2       | 1    | 0        | Description   |
-| ------ | ------ | ----- | --- | ---- | --- | --- | ------- | ---- | -------- | ------------- |
-| 0x00   | BP0A   | BP0AL | =   | =    | =   | =   | =       | =>   | 0        | Breakpoint 0  |
-| 0x01   | BP0A   | BP0AH | =   | =    | =   | =   | =       | =    | =>       |               |
-| 0x02   | BP0A   |       |     |      |     |     |         |      | BP0AT    | (MSb)         |
-| 0x04   | BP1A   | BP1AL | =   | =    | =   | =   | =       | =>   | 0        | Breakpoint 1  |
-| 0x05   | BP1A   | BP1AH | =   | =    | =   | =   | =       | =    | =>       |               |
-| 0x06   | BP1A   |       |     |      |     |     |         |      | BP1AT    | (MSb)         |
-| 0x08   | TRAPEN |       |     |      |     |     | STEP    | HWBP | PCHOLD?  | Trap Enable   |
-| 0x09   | TRAPEN | INT   | JMP | SWBP | ??? |     |         | BP1  | BP0      |               |
-| 0x0C   | CAUSE  | RESET | EXT |      |     |     | STOPPED |      |          | Halt Cause    |
-| 0x0D   | CAUSE  | INT   | JMP | SWBP |     |     |         | BP1  | BP0_STEP |               |
-| 0x14   | PC     | PCL   | =   | =    | =   | =   | =       | =    | =>       | Program Ctr   |
-| 0x15   | PC     | PCH   | =   | =    | =   | =   | =       | =    | =>       | word address  |
-| 0x18   | SP     | SPL   | =   | =    | =   | =   | =       | =    | =>       | Stack Ptr     |
-| 0x19   | SP     |       | SPH | =    | =   | =   | =       | =    | =>       |               |
-| 0x1C   | SREG   | I     | T   | H    | S   | Z   | N       | V    | C        | Status Reg    |
-| 0x20   | R0     | R0    | =   | =    | =   | =   | =       | =    | =>       | Register file |
-| ...    | ...    | ...   | ... | ...  | ... | ... | ...     | ...  | ...      | ...           |
-| 0x3F   | R31/ZH | R31   | =   | =    | =   | =   | =       | =    | =>       | Register file |
+| Offset | Name   | 7     | 6   | 5    | 4      | 3   | 2       | 1    | 0        | Description   |
+| ------ | ------ | ----- | --- | ---- | ------ | --- | ------- | ---- | -------- | ------------- |
+| 0x00   | BP0A   | BP0AL | =   | =    | =      | =   | =       | =>   | 0        | Breakpoint 0  |
+| 0x01   | BP0A   | BP0AH | =   | =    | =      | =   | =       | =    | =>       |               |
+| 0x02   | BP0A   |       |     |      |        |     |         |      | BP0AT    | (MSb)         |
+| 0x04   | BP1A   | BP1AL | =   | =    | =      | =   | =       | =>   | 0        | Breakpoint 1  |
+| 0x05   | BP1A   | BP1AH | =   | =    | =      | =   | =       | =    | =>       |               |
+| 0x06   | BP1A   |       |     |      |        |     |         |      | BP1AT    | (MSb)         |
+| 0x08   | TRAPEN |       |     |      |        |     | STEP    | HWBP | PCHOLD?  | Trap Enable   |
+| 0x09   | TRAPEN | INT   | JMP | SWBP | EXTBRK |     |         | BP1  | BP0      |               |
+| 0x0C   | CAUSE  | RESET | EXT |      |        |     | STOPPED |      |          | Halt Cause    |
+| 0x0D   | CAUSE  | INT   | JMP | SWBP | EXTBRK |     |         | BP1  | BP0_STEP |               |
+| 0x14   | PC     | PCL   | =   | =    | =      | =   | =       | =    | =>       | Program Ctr   |
+| 0x15   | PC     | PCH   | =   | =    | =      | =   | =       | =    | =>       | word address  |
+| 0x18   | SP     | SPL   | =   | =    | =      | =   | =       | =    | =>       | Stack Ptr     |
+| 0x19   | SP     |       | SPH | =    | =      | =   | =       | =    | =>       |               |
+| 0x1C   | SREG   | I     | T   | H    | S      | Z   | N       | V    | C        | Status Reg    |
+| 0x20   | R0     | R0    | =   | =    | =      | =   | =       | =    | =>       | Register file |
+| ...    | ...    | ...   | ... | ...  | ...    | ... | ...     | ...  | ...      | ...           |
+| 0x3F   | R31/ZH | R31   | =   | =    | =      | =   | =       | =    | =>       | Register file |

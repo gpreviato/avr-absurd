@@ -386,14 +386,14 @@ class RspServer:
                 log.info(f"Disabling UNKNOWN1")
                 self.dbg.disable_traps(Traps.UNKNOWN1)
                 self.send_packet(b'UNKNOWN1 disabled\n'.hex())
-            elif cmd=="unk2 on":
-                log.info(f"Enabling UNKNOWN2")
-                self.dbg.enable_traps(Traps.UNKNOWN2)
-                self.send_packet(b'UNKNOWN2 enabled\n'.hex())
-            elif cmd=="unk2 off":
-                log.info(f"Disabling UNKNOWN2")
-                self.dbg.disable_traps(Traps.UNKNOWN2)
-                self.send_packet(b'UNKNOWN2 disabled\n'.hex())
+            elif cmd=="extbrk on":
+                log.info(f"Enabling EXTBRK trap")
+                self.dbg.enable_traps(Traps.EXTBRK)
+                self.send_packet(b'EXTBRK trap enabled\n'.hex())
+            elif cmd=="extbrk off":
+                log.info(f"Disabling EXTBRK trap")
+                self.dbg.disable_traps(Traps.EXTBRK)
+                self.send_packet(b'EXTBRK trap disabled\n'.hex())
             else:
                 log.warn(f"Unrecognized monitor command")
                 self.send_packet("")
