@@ -1,0 +1,725 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"cont",
+				"counter"
+			],
+			[
+				"p",
+				"pulse_times"
+			],
+			[
+				"pule",
+				"pulseTimeList"
+			],
+			[
+				"CTR",
+				"CTRLA"
+			],
+			[
+				"rc",
+				"rc5Message_t"
+			],
+			[
+				"i",
+				"intHandler"
+			],
+			[
+				"pa",
+				"partitionKeysDict"
+			],
+			[
+				"par",
+				"partitionKeyId"
+			],
+			[
+				"parti",
+				"partionkey"
+			],
+			[
+				"rowD",
+				"rowDict"
+			],
+			[
+				"db",
+				"dbconn"
+			],
+			[
+				"ca",
+				"cassandra_storage"
+			],
+			[
+				"ro",
+				"rowStarted"
+			],
+			[
+				"row",
+				"rowData"
+			],
+			[
+				"in",
+				"inCellRows"
+			],
+			[
+				"li",
+				"lineInfoR"
+			],
+			[
+				"line",
+				"lineInfoR"
+			],
+			[
+				"r",
+				"rowDataDict"
+			],
+			[
+				"part",
+				"partKey"
+			],
+			[
+				"fil",
+				"fileInterator"
+			],
+			[
+				"ke",
+				"keyMatch"
+			],
+			[
+				"lin",
+				"lineInfo"
+			],
+			[
+				"uin",
+				"uint16_t"
+			],
+			[
+				"uS",
+				"uSecTimer"
+			],
+			[
+				"std",
+				"stdarg.h"
+			],
+			[
+				"pinI",
+				"pinInt"
+			],
+			[
+				"gpio",
+				"gpioInt_t"
+			],
+			[
+				"SE",
+				"SECT_Number"
+			],
+			[
+				"PA",
+				"PAGES_Reserved"
+			],
+			[
+				"PAGE",
+				"PAGE_Number"
+			],
+			[
+				"EEMEM",
+				"EEMEM_Size"
+			],
+			[
+				"IO",
+				"IOINT_EDGE_RISE"
+			],
+			[
+				"In",
+				"InterruptPinsUsed"
+			],
+			[
+				"mode",
+				"modFrame_t"
+			],
+			[
+				"fram",
+				"frameStruct_t"
+			],
+			[
+				"buf",
+				"buffLen"
+			],
+			[
+				"se",
+				"speed"
+			],
+			[
+				"uint",
+				"uint16_t"
+			],
+			[
+				"Tim",
+				"Timer_t"
+			],
+			[
+				"Ti",
+				"Timer_t"
+			],
+			[
+				"t5",
+				"_t50instance"
+			],
+			[
+				"C",
+				"CTIMER_config"
+			],
+			[
+				"usa",
+				"usartId"
+			],
+			[
+				"uart",
+				"usartId"
+			],
+			[
+				"re",
+				"regIndex"
+			],
+			[
+				"x",
+				"xCtimer_t"
+			],
+			[
+				"time",
+				"timerInstance"
+			],
+			[
+				"xC",
+				"xCtimer_t"
+			],
+			[
+				"tim",
+				"timerInstance"
+			],
+			[
+				"CTIMER_CL",
+				"CTIMER_CLK_X_uSEC"
+			],
+			[
+				"rea",
+				"readIntCallnback"
+			],
+			[
+				"mod",
+				"modbus_t"
+			],
+			[
+				"BAU",
+				"BAUD_19200"
+			],
+			[
+				"BAUD",
+				"BAUD_9600"
+			],
+			[
+				"BAUD_",
+				"BAUD_2400"
+			],
+			[
+				"__",
+				"__attribute__"
+			],
+			[
+				"en",
+				"enableUsartTxInterrupt"
+			],
+			[
+				"F",
+				"Fifo_t"
+			],
+			[
+				"gp",
+				"gpioPort_t"
+			],
+			[
+				"gpi",
+				"gpioPort_t"
+			],
+			[
+				"us",
+				"usartStop"
+			],
+			[
+				"uar",
+				"uartId"
+			],
+			[
+				"FileO",
+				"FileOutName"
+			],
+			[
+				"fl",
+				"flOut"
+			],
+			[
+				"foot",
+				"footDict"
+			],
+			[
+				"new",
+				"newList"
+			],
+			[
+				"ADC",
+				"ADCOffset"
+			],
+			[
+				"Time",
+				"TimerPeriod"
+			],
+			[
+				"L",
+				"LED_PERIOD"
+			],
+			[
+				"VLE",
+				"VLEVEL_MIN"
+			],
+			[
+				"A",
+				"ADC_BATT_CHN"
+			],
+			[
+				"uint1",
+				"uint16_t"
+			],
+			[
+				"_DE",
+				"_DEBUG_MAIN"
+			],
+			[
+				"co",
+				"countOnButtonWait"
+			],
+			[
+				"dp",
+				"dprint_raw"
+			],
+			[
+				"eve",
+				"InsertEvent"
+			],
+			[
+				"get",
+				"GetTimer"
+			],
+			[
+				"App",
+				"AppEvents"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "AvrUpdiDebugger",
+			"settings":
+			{
+				"buffer_size": 0,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "README.md",
+			"settings":
+			{
+				"buffer_size": 1972,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "guesswork.md",
+			"settings":
+			{
+				"buffer_size": 11082,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/net/gpreviato/src/Infrared/getIrFromOlimex/irreceiver/irreceiver/irreceiver.py",
+		"/net/gpreviato/src/Infrared/getIrFromOlimex/irreceiver/examples/irreceiver_example.py",
+		"/net/gpreviato/src/Infrared/getIrFromOlimex/irreceiver_Olimex.py",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/necIrEncoder.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/necIrEncoder.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/rc5.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/rc5.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/tools.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/tools.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/timer0.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/timer0.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/rtc.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/rtc.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/tcb.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/tcb.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/tca.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/tca.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/protected_io.S",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/protected_io.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/port.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/pin_manager.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/pin_manager.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/mcc.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/mcc.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/interrupt_avr8.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/FifoClass.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/FifoClass.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/eventsManager.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/eventsManager.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/device_config.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/cpuint.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/cpuint.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/config.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/compiler.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/clock_config.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/ccp.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/boardIo.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/boardIo.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/efe2Ir.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/efe2Ir.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/Makefile",
+		"/net/gpreviato/src/AtmelAVR/XM2201A_M2LV_Atmega8/user/tools.h",
+		"/net/gpreviato/src/AtmelAVR/XM2205_keybManager/user/pin_manager.h",
+		"/net/gpreviato/src/AtmelAVR/XM2205_keybManager/user/tools.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/slpctrl.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/slpctrl.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/keybManager.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/keybManager.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/i2cSlave.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/i2cSlave.c",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/assembler.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/user/atomic.h",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/bloom.yaml",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/Flash.sh",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/NoteSuBloom.txt",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/StartBloomDebugger.sh",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/UpdateVersion.sh",
+		"/net/gpreviato/src/AtmelAVR/XM2401_efe2Ir/changelog.txt",
+		"/net/gpreviato/src/cassandra/ToolsForMaintenance/ssTableToSql/example_load.py",
+		"/net/gpreviato/src/cassandra/ToolsForMaintenance/ssTableToSql/config.py",
+		"/net/gpreviato/src/cassandra/ToolsForMaintenance/ssTableToSql/queries_sql.py",
+		"/net/gpreviato/src/cassandra/ToolsForMaintenance/ssTableToSql/DBTools.py",
+		"/net/gpreviato/src/cassandra/ToolsForMaintenance/ssTableToSql/ssFileBackupAndDeleteToJson.py",
+		"/home/gpreviato/src/cassandra/src/tools/SSDumpToCsql/LoadSStable.py",
+		"/home/gpreviato/src/python/getInvoices/GetInvoiceFromComm/config.py",
+		"/home/gpreviato/src/python/getInvoices/GetInvoiceFromComm/TestLogin.py",
+		"/home/gpreviato/src/python/getInvoices/GetInvoiceFromComm/GetHttpsPages_v2.py",
+		"/net/home-gpreviato/bin/GetInvoiceFromComm/GetHttpsPages_v2.py",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/drivers/fsl_iap.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/drivers/fsl_iap.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/eeprom_db.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/eeprom_db.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/eeprom_mem.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/eeprom_mem.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/tools.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/tools.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/x_LPC80x.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/drivers/fsl_reset.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/drivers/fsl_reset.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/drivers/fsl_clock.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/drivers/fsl_clock.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/drivers/fsl_common.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/drivers/fsl_common.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/FifoClass.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/FifoClass.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/drivers/fsl_ctimer.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/device/LPC802_features.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/board/peripherals.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/board/peripherals.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/pwmManager.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/pwmManager.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/device/fsl_device_registers.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/device/system_LPC802.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/device/system_LPC802.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/sys_uSecTimers.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/sys_uSecTimers.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/sysTimers.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/device/LPC802.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/commandsManager.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/commandsManager.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/setInterruptPins.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/setInterruptPins.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/modbus.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/modbus.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/x_cTimer.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/x_cTimer.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/drivers/fsl_ctimer.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/uart_xtend.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/uart_xtend.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/tmp/usart_handler.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/tmp/usart_handler.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/drivers/fsl_usart.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/drivers/fsl_usart.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/semihost_hardfault.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/startup/startup_lpc802.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/CMSIS/mpu_armv7.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/CMSIS/cmsis_gcc.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/CMSIS/cmsis_compiler.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/CMSIS/cmsis_version.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/led_manager.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/led_manager.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/board/pin_mux.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/board/pin_mux.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/board/clock_config.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/board/clock_config.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/board/board.h",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/board/board.c",
+		"/net/gpreviato/src/NXP_Projects/workspace_v1/x-tempSensorModbus/source/config.h"
+	],
+	"find":
+	{
+		"height": 32.0
+	},
+	"find_in_files":
+	{
+		"height": 101.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"scrollbar_highlights": true,
+		"show_context": true,
+		"use_buffer2": true,
+		"use_gitignore": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "AvrUpdiDebugger",
+					"selected": true,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 0,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"stack_multiselect": false,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "README.md",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1972,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"mde.match_heading_hashes": false,
+							"syntax": "Packages/Markdown/Markdown.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"stack_multiselect": false,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "guesswork.md",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11082,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"mde.match_heading_hashes": false,
+							"syntax": "Packages/Markdown/Markdown.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"stack_multiselect": false,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 32.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "AvrUpdiDebugger.sublime-project",
+	"replace":
+	{
+		"height": 60.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 172.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
